@@ -1,74 +1,88 @@
 from tkinter import *
 import tkinter.font
+import json
+import requests
 
-# 모든 객체 파괴도 왜 안되냐
 def clear():
     components = root.grid_slaves()
     for component in components:
         component.destroy()
 
+# 로그인 페이지
 def loginPage():
-    def login():
+    def login(): # 로그인 버튼 누름
         id = idInput.get()
         pw = pwInput.get()
-        print(id)
-        print(pw)
-        print('login')
-        return
+        url = host + 'login'
+        print(url)
+        reqBody = '{mbId:' + id + ', mbEmail:' + id + ',mbPw:' + pw + '}'
+        resp = requests.post(url=url, headers=reqHeader, data=reqBody).json()
+        global member
+        member = resp
     
-    # placeHolder 왜 안되냐
-    def idInputFocusIn():
-        if idInput.get() == '아이디 또는 이메일':
-            idInput.delete(0,'end')
-    
-    def idInputFocusOut():
-        if not idInput.get():
-            idInput.insert(0,'아이디 또는 이메일')
+    def focusPwInput(event): # 아이디창에서 엔터누름
+        pwInput.focus_set()
+
+    def login2(event): # 비밀번호창에서 엔터 누름
+        login()
     
     clear() # 모든 객체 파괴
 
-    # 사용 객체
-    title = Label(root,text='TodoT', font=titleFont, bg=purple1, fg=purple3)
-    idInput = Entry(root, width= wholeX, bg=purple1, fg=purple3)
-    idInput.insert(0,'아이디 또는 이메일')
-    idInput.bind("<FocusIn>",idInputFocusIn)
-    idInput.bind("<FocusOut>",idInputFocusOut)
-    pwInput = Entry(root, width= wholeX, bg=purple1, fg=purple3)
-    pwInput.insert(0,'비밀번호')
-    pwInput.bind("<Return>",login)
-    loginBtn = Button(root, text='로그인', font=btnFont, width= wholeX, bg=purple3, fg=purple1, command=login)
-    joinBtn = Button(root, text='회원가입', font=btnFont, width= wholeX, bg=purple3, fg=purple1, command=joinPage)
-
-    # 위치 선정
-    title.grid(row=0,column=0,padx=10,pady=25)
+    title = Label(root,text='TodoT', font=titleFont, fg=purple3)
+    title.grid(row=0,column=0,padx=10,pady=20)
     
-    idInput.grid(row=1,column=0,padx=10,pady=5)
-    pwInput.grid(row=2,column=0,padx=10,pady=5)
-    loginBtn.grid(row=3,column=0,padx=10,pady=5)
-    joinBtn.grid(row=4,column=0,padx=10,pady=5)
-    return
+    idLabel = Label(root,text='아이디 또는 이메일', fg=purple3)
+    idLabel.grid(row=1,column=0,padx=10,pady=0)
 
+    idInput = Entry(root, width= wholeX, bg=purple1, fg=purple3)
+    idInput.grid(row=2,column=0,padx=10,pady=5)
+    idInput.bind("<Return>",focusPwInput)
+    idInput.focus_set()
+    
+    pwLabel = Label(root,text='비밀번호', fg=purple3)
+    pwLabel.grid(row=3,column=0,padx=10,pady=0)
+
+    pwInput = Entry(root, width= wholeX, bg=purple1, fg=purple3)
+    pwInput.grid(row=4,column=0,padx=10,pady=5)
+    pwInput.config(show='*')
+    pwInput.bind("<Return>",login2)
+
+    loginBtn = Button(root, text='로그인', font=btnFont, width= wholeX, bg=purple3, fg=purple1, command=login)
+    loginBtn.grid(row=5,column=0,padx=10,pady=10)
+    joinBtn = Button(root, text='회원가입', font=btnFont, width= wholeX, bg=purple3, fg=purple1, command=joinPage)
+    joinBtn.grid(row=6,column=0,padx=10,pady=10)
+
+    
+# 회원가입 페이지
 def joinPage():
     def join():
-        return
+        pass
     
     clear() # 모든 객체 파괴
 
-    # 사용 객체
-    title = Label(root,text='TodoT', font=titleFont, bg=purple1, fg=purple3)
+    title = Label(root, text='TodoT', font=titleFont, bg=purple1, fg=purple3)
+    title.grid(row=0,column=0,padx=10,pady=1)
+    idLabel = Label(root, text='아이디', fg=purple3)
+    idLabel.grid(row=1,column=0,padx=10,pady=1)
     idInput = Entry(root, width= wholeX, bg=purple1, fg=purple3)
+    idInput.grid(row=2,column=0,padx=10,pady=1)
+    emailLabel = Label(root, text='이메일주소', fg=purple3)
+    emailLabel.grid(row=3,column=0,padx=10,pady=1)
     emailInput = Entry(root, width= wholeX, bg=purple1, fg=purple3)
+    emailInput.grid(row=4,column=0,padx=10,pady=1)
+    pwLabel = Label(root, text='비밀번호', fg=purple3)
+    pwLabel.grid(row=5,column=0,padx=10,pady=1)
     pwInput = Entry(root, width= wholeX, bg=purple1, fg=purple3)
+    pwInput.grid(row=6,column=0,padx=10,pady=1)
+    cfLabel = Label(root, text='비밀번호 확인', fg=purple3)
+    cfLabel.grid(row=7,column=0,padx=10,pady=1)
     cfInput = Entry(root, width= wholeX, bg=purple1, fg=purple3)
-    joinBtn = Button(root, text='회원가입', font=btnFont, width= wholeX, bg=purple3, fg=purple1, command=join)
+    cfInput.grid(row=8,column=0,padx=10,pady=1)
+    joinBtn = Button(root, text='회원가입하기', font=btnFont, width= wholeX, bg=purple3, fg=purple1, command=join)
+    joinBtn.grid(row=9,column=0,padx=10,pady=2)
+    backBtn = Button(root, text='로그인화면', font=btnFont, width= wholeX, bg=purple3, fg=purple1, command=loginPage)
+    backBtn.grid(row=10,column=0,padx=10,pady=2)
     
-    # 위치 선정
-    title.place(x=110,y=20)
-    idInput.place(x=10,y=70)
-    emailInput.place(x=10,y=100)
-    pwInput.place(x=10,y=130)
-    cfInput.place(x=10,y=160)
-    joinBtn.place(x=10,y=190)
     return
 
 
@@ -82,6 +96,9 @@ purple1 = '#f4eff8'
 purple2 = '#8045b4'
 purple3 = '#581458'
 blue1 = '#2118a3'
+host = 'http://58.79.123.11:8080/'
+reqHeader = {"Content-Type" : "application/json"}
+member = {}
 
 # 기본창 설정
 root.title("TodoT") # 타이틀
