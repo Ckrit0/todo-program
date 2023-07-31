@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter.messagebox import Message as msgbox
 import tkinter.font
 import requests
+from functools import partial
 
 def clear():
     components = root.grid_slaves()
@@ -10,8 +11,9 @@ def clear():
 
 # 로그인 페이지
 def loginPage():
-    if(member != {}): # 로그인 정보가 있으면 할일목록 페이지로
+    if(member.get('mbNo') != 0): # 로그인 정보가 있으면 할일목록 페이지로
         todoPage()
+        return
     
     def login(): # 로그인 버튼 누름
         id = idInput.get()
@@ -19,6 +21,8 @@ def loginPage():
         url = host + 'login'
         reqBody = '{mbId:' + id + ', mbEmail:' + id + ',mbPw:' + pw + '}'
         resp = requests.post(url=url, headers=reqHeader, data=reqBody).json()
+        if(resp.get('mbNo') == 0):
+            msgbox(title='로그인 정보 확인',message='로그인 정보가 틀립니다.').show()
         global member
         member = resp
         todoPage()
@@ -59,8 +63,9 @@ def loginPage():
     
 # 회원가입 페이지
 def joinPage():
-    if(member != {}): # 로그인 정보가 있으면 할일목록 페이지로
+    if(member.get('mbNo') != 0): # 로그인 정보가 있으면 할일목록 페이지로
         todoPage()
+        return
     
     def join(): # 회원가입 버튼 누름
         id = idInput.get()
@@ -142,40 +147,74 @@ def joinPage():
     
 # 할일목록 페이지
 def todoPage():
-    if(member == {}): # 로그인 정보가 없으면 로그인페이지로
+    if(member.get('mbNo') == 0): # 로그인 정보가 없으면 로그인페이지로
         loginPage()
+        return
+    
+    def getTodos(order):
+        sort = ''
+        if order == 0 :
+            sort = 'progresstdorderdate'
+        elif order == 1 :
+            sort = 'progresstdreversedate'
+        elif order == 2 :
+            sort = 'progresstdordertargetdate'
+        elif order == 3 :
+            sort = 'progresstdreversetargetdate'
+        elif order == 4:
+            sort = 'alltdorderdate'
+        elif order == 5:
+            sort = 'alltdreversedate'
+        elif order == 6:
+            sort = 'alltdordertargetdate'
+        elif order == 7:
+            sort = 'alltdreversetargetdate'
 
-    checkVar=BooleanVar()
-    def checkCheck():
-        print(checkVar.get())
+        url = host + sort
+        reqBody = '{mbNo:' + str(member.get('mbNo')) + '}'
+        resp = requests.post(url=url,headers=reqHeader, data=reqBody).json()
+        todos = resp
+        return todos
 
-    # 일정 갯수 가져와서 사이즈 맞추기
-    root.geometry("500x500+500+500") # 창 크기 설정
+    
+    def completeTodo(tdNo,rowNo):
+        print(tdNo,rowNo)
+
+    def deleteTodo(tdNo,rowNo):
+        print(tdNo,rowNo)
+
+    # 여기서 오더방식 취합 해야함.
+    todos = getTodos(order)
+    height = (len(todos)*30) + 100
+    root.geometry("500x"+ str(height) +"+500+500") # 창 크기 설정
     clear() # 모든 객체 파괴
 
     title = Label(root, text='TodoT', font=titleFont, bg=purple1, fg=purple3)
     title.grid(row=0,column=0,padx=10,pady=1,columnspan=10)
 
-    greetLabel = Label(root, text=member.get('mbId')+'('+member.get('mbEmail')+')님 환영합니다.', fg=purple3)
+    
+    greetLabel = Label(root, text=str(member.get('mbId')) + '(' + str(member.get('mbEmail')) + ')님 환영합니다.', font=greetFont, fg=blue1)
     greetLabel.grid(row=1,column=0,padx=10,pady=1,columnspan=10)
 
-    todoCheck = Checkbutton(root,text='일정내용',fg=purple3, variable=checkVar, command=checkCheck)
-    todoCheck.grid(row=2,column=0,padx=10,pady=2,columnspan=6, sticky='w')
+    rowNo = 2
+    for todoItem in todos:
+        checkVar=IntVar()
+        checkVar.set(todoItem.get('tdIscomplete'))
+        todoCheck = Checkbutton(root,text=todoItem.get('tdContent'),fg=purple3, wraplength=280, variable=checkVar.get(), command= partial(completeTodo,todoItem.get('tdNo'),rowNo))
+        todoCheck.grid(row=rowNo,column=0,padx=10,pady=2,columnspan=6, sticky='w')
+        if(checkVar.get() == 1):
+            todoCheck.config(font=complteFont)
+            todoCheck.select()
+            
+        
+        dateLabel = Label(root, text=todoItem.get('tdDate'), fg=purple3, width=15)
+        dateLabel.grid(row=rowNo,column=6,padx=10,pady=2,columnspan=3)
 
-    dateLabel = Label(root, text='2222-22-22', fg=purple3, width=15)
-    dateLabel.grid(row=2,column=6,padx=10,pady=2,columnspan=3)
+        deleteBtn = Button(root, text='삭제',font=btnFont, bg=blue1, fg=purple1, width=5, command= partial(deleteTodo,todoItem.get('tdNo'),rowNo))
+        deleteBtn.grid(row=rowNo,column=9,padx=10,pady=2)
 
-    deleteBtn = Button(root, text='삭제',font=btnFont, bg=blue1, fg=purple1, width=5)
-    deleteBtn.grid(row=2,column=9,padx=10,pady=2)
+        rowNo += 1
 
-    todoCheck2 = Checkbutton(root,text='일정내용두번째가 겁나게 길어지면 밑으로 내려가게 되는것인가? 진짜 진짜 많이 길어져도 밑으로 가나',fg=purple3, wraplength=280, variable=checkVar, command=checkCheck)
-    todoCheck2.grid(row=3,column=0,padx=10,pady=2,columnspan=6, sticky='w')
-
-    dateLabel2 = Label(root, text='2222-22-22', fg=purple3, width=15)
-    dateLabel2.grid(row=3,column=6,padx=10,pady=2,columnspan=3)
-
-    deleteBtn2 = Button(root, text='삭제',font=btnFont, bg=blue1, fg=purple1, width=5)
-    deleteBtn2.grid(row=3,column=9,padx=10,pady=2)
     
 
 
@@ -184,6 +223,8 @@ root = Tk() # 기본 창 생성
 # 공통 변수
 titleFont = tkinter.font.Font(family="맑은고딕", size=20, weight='bold')
 btnFont = tkinter.font.Font(family="맑은고딕", size=8, weight='bold')
+greetFont = tkinter.font.Font(family='맑은고딕', size=10, weight='bold')
+complteFont = tkinter.font.Font(family='맑은고딕', size=8, overstrike=True)
 wholeX = 38
 purple1 = '#f4eff8'
 purple2 = '#8045b4'
@@ -191,7 +232,8 @@ purple3 = '#581458'
 blue1 = '#2118a3'
 host = 'http://58.79.123.11:8080/'
 reqHeader = {"Content-Type" : "application/json"}
-member = {} # 로그인한 멤버
+member = { 'mbNo' : 0 } # 로그인한 멤버
+order = 0
 
 # 기본창 설정
 root.title("TodoT") # 타이틀
