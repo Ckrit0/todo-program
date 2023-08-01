@@ -152,7 +152,6 @@ def todoPage():
         return
         
     def getTodos(order):
-        order=4
         urlNext = ''
         if order == 0 :
             urlNext = 'progresstdorderdate'
@@ -196,10 +195,68 @@ def todoPage():
         resp = requests.post(url=url,headers=reqHeader, data=reqBody).json()
         todoPage()
         return
+    
+    def checkSeeall():
+        global order
+        if(seeallVar.get() == 0):
+            if(order == 4):
+                order = 0
+            elif(order == 5):
+                order = 1
+            elif(order == 6):
+                order = 2
+            elif(order == 7):
+                order = 3
+        else:
+            if(order == 0):
+                order = 4
+            elif(order == 1):
+                order = 5
+            elif(order == 2):
+                order = 6
+            elif(order == 3):
+                order = 7
+        todoPage()
+        return
+    
+    def orderDate():
+        global order
+        if(seeallVar.get() == 0):
+            order = 0
+        else:
+            order = 4
+        todoPage()
+        return
+    
+    def reverseDate():
+        global order
+        if(seeallVar.get() == 0):
+            order = 1
+        else:
+            order = 5
+        todoPage()
+        return
 
-    # 여기서 오더방식 취합 해야함.
+    def orderTargetDate():
+        global order
+        if(seeallVar.get() == 0):
+            order = 2
+        else:
+            order = 6
+        todoPage()
+        return
+
+    def reverseTargetDate():
+        global order
+        if(seeallVar.get() == 0):
+            order = 3
+        else:
+            order = 7
+        todoPage()
+        return
+
     todos = getTodos(order)
-    height = (len(todos)*30) + 100
+    height = (len(todos)*30) + 120
     root.geometry("500x"+ str(height) +"+500+500") # 창 크기 설정
     clear() # 모든 객체 파괴
 
@@ -222,13 +279,33 @@ def todoPage():
             todoCheck.config(variable=checkVar.get())
             todoCheck.select()
         
-        dateLabel = Label(root, text=todoItem.get('tdDate'), fg=purple3, width=15)
+        dateLabel = Label(root, text=str(todoItem.get('tdTargetdate')), fg=purple3, width=15)
         dateLabel.grid(row=rowNo+2,column=6,padx=10,pady=2,columnspan=3)
 
         deleteBtn = Button(root, text='삭제',font=btnFont, bg=blue1, fg=purple1, width=5, command= partial(deleteTodo,todoItem.get('tdNo'),rowNo))
         deleteBtn.grid(row=rowNo+2,column=9,padx=10,pady=2)
 
         rowNo += 1
+
+    rowNo += 2
+    seeallVar = IntVar()
+    seeallCheck = Checkbutton(root, text='완료된 일정 포함', fg=blue1, variable=seeallVar, command=checkSeeall)
+    seeallCheck.grid(row=rowNo,column=1,columnspan=8)
+    if(order == 0 or order == 1 or order == 2 or order == 3):
+        seeallVar.set(0)
+    else:
+        seeallVar.set(1)
+    
+    rowNo += 1
+    orderDateBtn = Button(root, text='작성일▲', bg=blue1, fg=purple1, command=orderDate)
+    orderDateBtn.grid(row=rowNo, column=1, padx=10, pady=2, columnspan=2)
+    reverseDateBtn = Button(root, text='작성일▼', bg=blue1, fg=purple1, command=reverseDate)
+    reverseDateBtn.grid(row=rowNo, column=3, padx=10, pady=2, columnspan=2)
+    orderTargetDateBtn = Button(root, text='목표일▲', bg=blue1, fg=purple1, command=orderTargetDate)
+    orderTargetDateBtn.grid(row=rowNo, column=5, padx=10, pady=2, columnspan=2)
+    reverseTargetDateBtn = Button(root, text='목표일▼', bg=blue1, fg=purple1, command=reverseTargetDate)
+    reverseTargetDateBtn.grid(row=rowNo, column=7, padx=10, pady=2, columnspan=2)
+
 
     
 
@@ -239,7 +316,7 @@ root = Tk() # 기본 창 생성
 titleFont = tkinter.font.Font(family="맑은고딕", size=20, weight='bold')
 btnFont = tkinter.font.Font(family="맑은고딕", size=8, weight='bold')
 greetFont = tkinter.font.Font(family='맑은고딕', size=10, weight='bold')
-complteFont = tkinter.font.Font(family='맑은고딕', size=8, overstrike=True)
+complteFont = tkinter.font.Font(family='맑은고딕', size=9, overstrike=True)
 wholeX = 38
 purple1 = '#f4eff8'
 purple2 = '#8045b4'
