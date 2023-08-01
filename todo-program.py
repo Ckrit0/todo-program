@@ -150,38 +150,52 @@ def todoPage():
     if(member.get('mbNo') == 0): # 로그인 정보가 없으면 로그인페이지로
         loginPage()
         return
-    
+        
     def getTodos(order):
-        sort = ''
+        order=4
+        urlNext = ''
         if order == 0 :
-            sort = 'progresstdorderdate'
+            urlNext = 'progresstdorderdate'
         elif order == 1 :
-            sort = 'progresstdreversedate'
+            urlNext = 'progresstdreversedate'
         elif order == 2 :
-            sort = 'progresstdordertargetdate'
+            urlNext = 'progresstdordertargetdate'
         elif order == 3 :
-            sort = 'progresstdreversetargetdate'
+            urlNext = 'progresstdreversetargetdate'
         elif order == 4:
-            sort = 'alltdorderdate'
+            urlNext = 'alltdorderdate'
         elif order == 5:
-            sort = 'alltdreversedate'
+            urlNext = 'alltdreversedate'
         elif order == 6:
-            sort = 'alltdordertargetdate'
+            urlNext = 'alltdordertargetdate'
         elif order == 7:
-            sort = 'alltdreversetargetdate'
+            urlNext = 'alltdreversetargetdate'
 
-        url = host + sort
+        url = host + urlNext
         reqBody = '{mbNo:' + str(member.get('mbNo')) + '}'
         resp = requests.post(url=url,headers=reqHeader, data=reqBody).json()
         todos = resp
         return todos
 
     
-    def completeTodo(tdNo,rowNo):
-        print(tdNo,rowNo)
+    def completeTodo(tdNo,isComplete,rowNo):
+        urlNext = ''
+        if(isComplete == 0):
+            urlNext = 'complete'
+        else:
+            urlNext = 'cancelcomplete'
+        url = host + urlNext
+        reqBody = '{tdNo:' + str(tdNo) + '}'
+        resp = requests.post(url=url,headers=reqHeader, data=reqBody).json()
+        todoPage()
+        return
 
     def deleteTodo(tdNo,rowNo):
-        print(tdNo,rowNo)
+        url = host + 'delete'
+        reqBody = '{tdNo:' + str(tdNo) + '}'
+        resp = requests.post(url=url,headers=reqHeader, data=reqBody).json()
+        todoPage()
+        return
 
     # 여기서 오더방식 취합 해야함.
     todos = getTodos(order)
@@ -196,22 +210,23 @@ def todoPage():
     greetLabel = Label(root, text=str(member.get('mbId')) + '(' + str(member.get('mbEmail')) + ')님 환영합니다.', font=greetFont, fg=blue1)
     greetLabel.grid(row=1,column=0,padx=10,pady=1,columnspan=10)
 
-    rowNo = 2
+    rowNo = 0
+    
     for todoItem in todos:
-        checkVar=IntVar()
+        checkVar = IntVar()
         checkVar.set(todoItem.get('tdIscomplete'))
-        todoCheck = Checkbutton(root,text=todoItem.get('tdContent'),fg=purple3, wraplength=280, variable=checkVar.get(), command= partial(completeTodo,todoItem.get('tdNo'),rowNo))
-        todoCheck.grid(row=rowNo,column=0,padx=10,pady=2,columnspan=6, sticky='w')
+        todoCheck = Checkbutton(root,text=todoItem.get('tdContent'),fg=purple3, wraplength=280, variable=checkVar, command= partial(completeTodo,todoItem.get('tdNo'),todoItem.get('tdIscomplete'),rowNo))
+        todoCheck.grid(row=rowNo+2,column=0,padx=10,pady=2,columnspan=6, sticky='w')
         if(checkVar.get() == 1):
             todoCheck.config(font=complteFont)
+            todoCheck.config(variable=checkVar.get())
             todoCheck.select()
-            
         
         dateLabel = Label(root, text=todoItem.get('tdDate'), fg=purple3, width=15)
-        dateLabel.grid(row=rowNo,column=6,padx=10,pady=2,columnspan=3)
+        dateLabel.grid(row=rowNo+2,column=6,padx=10,pady=2,columnspan=3)
 
         deleteBtn = Button(root, text='삭제',font=btnFont, bg=blue1, fg=purple1, width=5, command= partial(deleteTodo,todoItem.get('tdNo'),rowNo))
-        deleteBtn.grid(row=rowNo,column=9,padx=10,pady=2)
+        deleteBtn.grid(row=rowNo+2,column=9,padx=10,pady=2)
 
         rowNo += 1
 
