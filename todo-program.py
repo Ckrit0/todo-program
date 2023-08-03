@@ -3,6 +3,7 @@ from tkinter.messagebox import Message as msgbox
 import tkinter.font
 import requests
 from functools import partial
+import datetime
 
 def clear():
     components = root.grid_slaves()
@@ -176,6 +177,24 @@ def todoPage():
         todos = resp
         return todos
 
+    def logout():
+        global member
+        member = { 'mbNo' : 0 }
+        loginPage()
+        return
+
+    def newTodo():
+        mbNo = str(member.get('mbNo'))
+        tdContent = newContentInput.get()
+        tdTargetdate = newDateInput.get()
+        url = host + 'tdnew'
+        reqBody = '{mbNo:' + mbNo + ', tdContent: ' + tdContent + ', tdTargetdate:' + tdTargetdate + '}'
+        resp = requests.post(url=url,headers=reqHeader, data=reqBody).json()
+        todoPage()
+        return
+    
+    def newTodo2(event):
+        newTodo()
     
     def completeTodo(tdNo,isComplete):
         urlNext = ''
@@ -299,9 +318,13 @@ def todoPage():
             order = 7
         todoPage()
         return
+    
+    def refresh():
+        todoPage()
+        return
 
     todos = getTodos(order)
-    height = (len(todos)*30) + 180
+    height = (len(todos)*30) + 280
     root.geometry("455x"+ str(height) +"+500+500") # 창 크기 설정
     clear() # 모든 객체 파괴
 
@@ -310,7 +333,16 @@ def todoPage():
 
     
     greetLabel = Label(root, text=str(member.get('mbId')) + '(' + str(member.get('mbEmail')) + ')님 환영합니다.', font=greetFont, fg=blue1)
-    greetLabel.grid(row=1,column=0,padx=10,pady=1,columnspan=10)
+    greetLabel.grid(row=1,column=0,padx=5,pady=1,columnspan=6)
+
+    refreshBtn = Button(root, text='나가기', width=5, bg=purple3, fg=purple1, command=logout)
+    refreshBtn.grid(row=1, column=7, padx=2, pady=2)
+
+    refreshBtn = Button(root, text='변경', width=5, bg=purple3, fg=purple1, command=changePwPage)
+    refreshBtn.grid(row=1, column=8, padx=2, pady=2)
+
+    refreshBtn = Button(root, text='탈퇴', width=5, bg=purple3, fg=purple1, command=leavePage)
+    refreshBtn.grid(row=1, column=9, padx=2, pady=2)
 
     rowNo = 0
     
@@ -358,6 +390,21 @@ def todoPage():
         rowNo += 1
 
     rowNo += 2
+
+    newContentInput = Entry(root, width=35, bg=purple1, fg=purple3)
+    newContentInput.grid(row=rowNo, column=1, padx=2, pady=2, columnspan=6, sticky='w')
+    newContentInput.bind('<Return>',newTodo2)
+    newContentInput.focus_set()
+
+    newDateInput = Entry(root, width=10, bg=purple1, fg=purple3)
+    newDateInput.grid(row=rowNo, column=7, padx=2, pady=2, columnspan=2)
+    newDateInput.insert(0,today)
+    newDateInput.bind('<Return>',newTodo2)
+
+    newBtn = Button(root, text='추가',font=btnFont, bg=blue1, fg=purple1, width=5, command= newTodo)
+    newBtn.grid(row=rowNo, column=9, padx=5, pady=2)
+
+    rowNo += 1
     seeallVar = IntVar()
     seeallCheck = Checkbutton(root, text='완료된 일정 포함', fg=blue1, variable=seeallVar, command=checkSeeall)
     seeallCheck.grid(row=rowNo,column=1,columnspan=8)
@@ -367,16 +414,24 @@ def todoPage():
         seeallVar.set(1)
     
     rowNo += 1
-    orderDateBtn = Button(root, text='작성일▲', bg=blue1, fg=purple1, command=orderDate)
+    orderDateBtn = Button(root, text='작성일▲', bg=purple2, fg=purple1, command=orderDate)
     orderDateBtn.grid(row=rowNo, column=1, padx=10, pady=2, columnspan=2)
-    reverseDateBtn = Button(root, text='작성일▼', bg=blue1, fg=purple1, command=reverseDate)
+    reverseDateBtn = Button(root, text='작성일▼', bg=purple2, fg=purple1, command=reverseDate)
     reverseDateBtn.grid(row=rowNo, column=3, padx=10, pady=2, columnspan=2)
-    orderTargetDateBtn = Button(root, text='목표일▲', bg=blue1, fg=purple1, command=orderTargetDate)
+    orderTargetDateBtn = Button(root, text='목표일▲', bg=purple2, fg=purple1, command=orderTargetDate)
     orderTargetDateBtn.grid(row=rowNo, column=5, padx=10, pady=2, columnspan=2)
-    reverseTargetDateBtn = Button(root, text='목표일▼', bg=blue1, fg=purple1, command=reverseTargetDate)
+    reverseTargetDateBtn = Button(root, text='목표일▼', bg=purple2, fg=purple1, command=reverseTargetDate)
     reverseTargetDateBtn.grid(row=rowNo, column=7, padx=10, pady=2, columnspan=2)
 
+    rowNo += 1
+    refreshBtn = Button(root, text='새로고침', bg=blue1, fg=purple1, command=refresh, width=48)
+    refreshBtn.grid(row=rowNo, column=1, padx=10, pady=2, columnspan=8)
 
+def changePwPage():
+    pass
+
+def leavePage():
+    pass
     
 
 
@@ -398,6 +453,7 @@ member = { 'mbNo' : 0 } # 로그인한 멤버
 order = 0
 updateNo = -1
 updateDateNo = -1
+today = datetime.date.today()
 
 # 기본창 설정
 root.title("TodoT") # 타이틀
