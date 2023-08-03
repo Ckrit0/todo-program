@@ -177,7 +177,7 @@ def todoPage():
         return todos
 
     
-    def completeTodo(tdNo,isComplete,rowNo):
+    def completeTodo(tdNo,isComplete):
         urlNext = ''
         if(isComplete == 0):
             urlNext = 'complete'
@@ -188,8 +188,53 @@ def todoPage():
         resp = requests.post(url=url,headers=reqHeader, data=reqBody).json()
         todoPage()
         return
+    
+    def updateSet(rowNo,event):
+        global updateNo
+        updateNo = rowNo
+        todoPage()
+        return
+        
+    def updateTodoSubmit(tdNo,event):
+        tdContent = contentInput.get()
+        url = host + 'tdupdate'
+        reqBody = '{tdNo:' + str(tdNo) + ', tdContent:' + tdContent + '}'
+        resp = requests.post(url=url,headers=reqHeader, data=reqBody).json()
+        global updateNo
+        updateNo = -1
+        todoPage()
+        return
 
-    def deleteTodo(tdNo,rowNo):
+    def updateTodoCancel(event):
+        global updateNo
+        updateNo = -1
+        todoPage()
+        return
+    
+    def updateDateSet(rowNo,event):
+        global updateDateNo
+        updateDateNo = rowNo
+        todoPage()
+        return
+        
+    def updateTododateSubmit(tdNo,event):
+        tdDate = dateInput.get()
+        url = host + 'changetargetdate'
+        reqBody = '{tdNo:' + str(tdNo) + ', tdTargetdate:' + tdDate + '}'
+        resp = requests.post(url=url,headers=reqHeader, data=reqBody).json()
+        global updateDateNo
+        updateDateNo = -1
+        todoPage()
+        return
+
+    def updateTododateCancel(event):
+        global updateDateNo
+        updateDateNo = -1
+        todoPage()
+        return
+
+
+    def deleteTodo(tdNo):
         url = host + 'delete'
         reqBody = '{tdNo:' + str(tdNo) + '}'
         resp = requests.post(url=url,headers=reqHeader, data=reqBody).json()
@@ -256,8 +301,8 @@ def todoPage():
         return
 
     todos = getTodos(order)
-    height = (len(todos)*30) + 120
-    root.geometry("500x"+ str(height) +"+500+500") # 창 크기 설정
+    height = (len(todos)*30) + 180
+    root.geometry("455x"+ str(height) +"+500+500") # 창 크기 설정
     clear() # 모든 객체 파괴
 
     title = Label(root, text='TodoT', font=titleFont, bg=purple1, fg=purple3)
@@ -272,18 +317,43 @@ def todoPage():
     for todoItem in todos:
         checkVar = IntVar()
         checkVar.set(todoItem.get('tdIscomplete'))
-        todoCheck = Checkbutton(root,text=todoItem.get('tdContent'),fg=purple3, wraplength=280, variable=checkVar, command= partial(completeTodo,todoItem.get('tdNo'),todoItem.get('tdIscomplete'),rowNo))
-        todoCheck.grid(row=rowNo+2,column=0,padx=10,pady=2,columnspan=6, sticky='w')
+        todoCheck = Checkbutton(root,fg=purple3, variable=checkVar, command= partial(completeTodo, todoItem.get('tdNo'), todoItem.get('tdIscomplete')))
+        todoCheck.grid(row=rowNo+2, column=0, padx=0, pady=2)
+        
+        if(rowNo == updateNo):
+            contentInput = Entry(root, width=35, bg=purple1, fg=purple3)
+            contentInput.insert(0,todoItem.get('tdContent'))
+            contentInput.focus_set()
+            contentInput.grid(row=rowNo+2, column=1, padx=2, pady=2, columnspan=6, sticky='w')
+            contentInput.bind('<Return>',partial(updateTodoSubmit,todoItem.get('tdNo')))
+            contentInput.bind('<Escape>',updateTodoCancel)
+        else:
+            contentLabel = Label(root,text=todoItem.get('tdContent'), wraplength=280, fg=purple3, anchor='w', justify='left')
+            contentLabel.grid(row=rowNo+2, column=1, padx=2, pady=2, columnspan=6, sticky='w')
+            contentLabel.bind("<Button-1>", partial(updateSet, rowNo))
+
+        if(rowNo == updateDateNo):
+            dateInput = Entry(root, width=10, bg=purple1, fg=purple3)
+            dateInput.insert(0,todoItem.get('tdTargetdate'))
+            dateInput.focus_set()
+            dateInput.grid(row=rowNo+2, column=7, padx=2, pady=2, columnspan=2)
+            dateInput.bind('<Return>',partial(updateTododateSubmit,todoItem.get('tdNo')))
+            dateInput.bind('<Escape>',updateTododateCancel)
+        else:
+            dateLabel = Label(root, text=str(todoItem.get('tdTargetdate')), fg=purple3)
+            dateLabel.grid(row=rowNo+2, column=7, padx=2, pady=2, columnspan=2)
+            dateLabel.bind("<Button-1>", partial(updateDateSet, rowNo))
+
+        deleteBtn = Button(root, text='삭제',font=btnFont, bg=blue1, fg=purple1, width=5, command= partial(deleteTodo,todoItem.get('tdNo')))
+        deleteBtn.grid(row=rowNo+2, column=9, padx=5, pady=2)
+
+        #완료된 아이템 처리
         if(checkVar.get() == 1):
-            todoCheck.config(font=complteFont)
             todoCheck.config(variable=checkVar.get())
             todoCheck.select()
-        
-        dateLabel = Label(root, text=str(todoItem.get('tdTargetdate')), fg=purple3, width=15)
-        dateLabel.grid(row=rowNo+2,column=6,padx=10,pady=2,columnspan=3)
+            contentLabel.config(font=complteFont)
+            dateLabel.config(font=complteFont)
 
-        deleteBtn = Button(root, text='삭제',font=btnFont, bg=blue1, fg=purple1, width=5, command= partial(deleteTodo,todoItem.get('tdNo'),rowNo))
-        deleteBtn.grid(row=rowNo+2,column=9,padx=10,pady=2)
 
         rowNo += 1
 
@@ -326,6 +396,8 @@ host = 'http://58.79.123.11:8080/'
 reqHeader = {"Content-Type" : "application/json"}
 member = { 'mbNo' : 0 } # 로그인한 멤버
 order = 0
+updateNo = -1
+updateDateNo = -1
 
 # 기본창 설정
 root.title("TodoT") # 타이틀
