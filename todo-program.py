@@ -147,7 +147,7 @@ def joinPage():
     backBtn = Button(root, text='로그인화면', font=btnFont, width= wholeX, bg=purple3, fg=purple1, command=loginPage)
     backBtn.grid(row=10,column=0,padx=10,pady=2)
     
-# 할일목록 페이지 - 신규, 수정: 한글로 저장이 안됨. 왜?
+# 할일목록 페이지
 def todoPage():
     if(member.get('mbNo') == 0): # 로그인 정보가 없으면 로그인페이지로
         loginPage()
@@ -189,8 +189,10 @@ def todoPage():
         tdContent = str(newContentInput.get())
         tdTargetdate = str(newDateInput.get())
         url = host + 'tdnew'
-        reqBody = '{mbNo:' + mbNo + ', tdContent: "' + tdContent + '", tdTargetdate: ' + tdTargetdate + '}'
-        resp = requests.post(url=url,headers=reqHeader, data=reqBody).json()
+        reqBody = '{mbNo: ' + mbNo + ', tdContent: ' + tdContent + ', tdTargetdate: ' + tdTargetdate + '}'
+        resp = requests.post(url=url,headers=reqHeader, data=reqBody.encode(encoding='UTF-8')).json()
+        print(reqBody)
+        print(resp)
         todoPage()
         return
     
@@ -219,7 +221,7 @@ def todoPage():
         tdContent = contentInput.get()
         url = host + 'tdupdate'
         reqBody = '{tdNo:' + str(tdNo) + ', tdContent:' + tdContent + '}'
-        resp = requests.post(url=url,headers=reqHeader, data=reqBody).json()
+        resp = requests.post(url=url,headers=reqHeader, data=reqBody.encode(encoding='UTF-8')).json()
         global updateNo
         updateNo = -1
         todoPage()
