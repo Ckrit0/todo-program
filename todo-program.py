@@ -5,6 +5,7 @@ import requests
 from functools import partial
 import datetime
 
+# 모든 객체 파괴
 def clear():
     components = root.grid_slaves()
     for component in components:
@@ -324,7 +325,7 @@ def todoPage():
         return
 
     todos = getTodos(order)
-    height = (len(todos)*30) + 280
+    height = (len(todos)*30) + 200
     root.geometry("455x"+ str(height) +"+500+500") # 창 크기 설정
     clear() # 모든 객체 파괴
 
@@ -427,11 +428,81 @@ def todoPage():
     refreshBtn = Button(root, text='새로고침', bg=blue1, fg=purple1, command=refresh, width=48)
     refreshBtn.grid(row=rowNo, column=1, padx=10, pady=2, columnspan=8)
 
+# 비밀번호 변경페이지
 def changePwPage():
-    pass
+    if(member.get('mbNo') == 0): # 로그인 정보가 없으면 로그인 페이지로
+        loginPage()
+        return
+    
+    def changePw():
+        if(member.get('mbPw') != oldPwInput.get()):
+            msgbox(title='비밀번호 확인', message='현재 비밀번호가 틀립니다.').show()
+            return
+        if(pwInput.get() == ''):
+            msgbox(title='비밀번호 확인', message='새로운 비밀번호가 없습니다.').show()
+            return
+        if(pwInput.get() != cfInput.get()):
+            msgbox(title='새로운 비밀번호 확인', message='새로운 비밀번호와 새로운 비밀번호 확인이 서로 다릅니다.').show()
+            return
+        pw = pwInput.get()
+        url = host + 'changepw'
+        reqBody = '{mbNo:' + str(member.get('mbNo')) + ', mbPw:' + pw + '}'
+        resp = requests.post(url=url,headers=reqHeader, data=reqBody).json()
+        if(resp == True):
+            todoPage()
+            return
+
+    def changePw2(enent):
+        changePw()
+
+    def focusNewPw(event):
+        pwInput.focus_set()
+
+    def focusNewCf(event):
+        cfInput.focus_set()
+
+    root.geometry(defaultSize) # 기본 창 크기
+    clear() # 모든 객체 파괴
+
+    title = Label(root, text='TodoT', font=titleFont, bg=purple1, fg=purple3)
+    title.grid(row=0,column=0,padx=10,pady=1)
+
+    oldPwLabel = Label(root, text='현재 비밀번호', fg=purple3)
+    oldPwLabel.grid(row=1,column=0,padx=10,pady=1)
+
+    oldPwInput = Entry(root, width= wholeX, bg=purple1, fg=purple3)
+    oldPwInput.grid(row=2,column=0,padx=10,pady=1)
+    oldPwInput.config(show='*')
+    oldPwInput.focus_set()
+    oldPwInput.bind("<Return>",focusNewPw)
+
+    pwLabel = Label(root, text='새로운 비밀번호', fg=purple3)
+    pwLabel.grid(row=3,column=0,padx=10,pady=1)
+
+    pwInput = Entry(root, width= wholeX, bg=purple1, fg=purple3)
+    pwInput.grid(row=4,column=0,padx=10,pady=1)
+    pwInput.config(show='*')
+    pwInput.bind("<Return>",focusNewCf)
+
+    cfLabel = Label(root, text='새로운 비밀번호 확인', fg=purple3)
+    cfLabel.grid(row=5,column=0,padx=10,pady=1)
+
+    cfInput = Entry(root, width= wholeX, bg=purple1, fg=purple3)
+    cfInput.grid(row=6,column=0,padx=10,pady=1)
+    cfInput.config(show='*')
+    cfInput.bind("<Return>",changePw2)
+
+    joinBtn = Button(root, text='비밀번호 변경하기', font=btnFont, width= wholeX, bg=purple3, fg=purple1, command=changePw)
+    joinBtn.grid(row=7,column=0,padx=10,pady=2)
+
+    backBtn = Button(root, text='이전 페이지로', font=btnFont, width= wholeX, bg=purple3, fg=purple1, command=todoPage)
+    backBtn.grid(row=8,column=0,padx=10,pady=2)
+    
 
 def leavePage():
-    pass
+    root.geometry(defaultSize) # 기본 창 크기
+    clear() # 모든 객체 파괴
+    
     
 
 
