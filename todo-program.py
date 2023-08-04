@@ -147,7 +147,7 @@ def joinPage():
     backBtn = Button(root, text='로그인화면', font=btnFont, width= wholeX, bg=purple3, fg=purple1, command=loginPage)
     backBtn.grid(row=10,column=0,padx=10,pady=2)
     
-# 할일목록 페이지
+# 할일목록 페이지 - 신규, 수정: 한글로 저장이 안됨. 왜?
 def todoPage():
     if(member.get('mbNo') == 0): # 로그인 정보가 없으면 로그인페이지로
         loginPage()
@@ -186,10 +186,10 @@ def todoPage():
 
     def newTodo():
         mbNo = str(member.get('mbNo'))
-        tdContent = newContentInput.get()
-        tdTargetdate = newDateInput.get()
+        tdContent = str(newContentInput.get())
+        tdTargetdate = str(newDateInput.get())
         url = host + 'tdnew'
-        reqBody = '{mbNo:' + mbNo + ', tdContent: ' + tdContent + ', tdTargetdate:' + tdTargetdate + '}'
+        reqBody = '{mbNo:' + mbNo + ', tdContent: "' + tdContent + '", tdTargetdate: ' + tdTargetdate + '}'
         resp = requests.post(url=url,headers=reqHeader, data=reqBody).json()
         todoPage()
         return
@@ -498,12 +498,48 @@ def changePwPage():
     backBtn = Button(root, text='이전 페이지로', font=btnFont, width= wholeX, bg=purple3, fg=purple1, command=todoPage)
     backBtn.grid(row=8,column=0,padx=10,pady=2)
     
-
+# 회원 탈퇴 페이지
 def leavePage():
+    if(member.get('mbNo') == 0): # 로그인 정보가 없으면 로그인 페이지로
+        loginPage()
+        return
+    
+    def goodBye():
+        global member
+        if(member.get('mbPw') != oldPwInput.get()):
+            msgbox(title='비밀번호 확인', message='현재 비밀번호가 틀립니다.').show()
+            return
+        url = host + 'leave'
+        reqBody = '{mbNo:' + str(member.get('mbNo')) + '}'
+        resp = requests.post(url=url,headers=reqHeader, data=reqBody).json()
+        if(resp == True):
+            member = { 'mbNo' : 0 }
+            loginPage()
+            return
+
+    def goodBye2(event):
+        goodBye()
+
     root.geometry(defaultSize) # 기본 창 크기
     clear() # 모든 객체 파괴
+
+    warningTextLabel = Label(root, text='탈퇴 후에 복구가 불가능합니다.\n 진짜 나갈거임? 진짜?', bg=purple2, fg=purple1, bd=1, relief='flat', width=35, height=5)
+    warningTextLabel.grid(row=0, column=0, padx=10, pady= 30)
+
+    oldPwLabel = Label(root, text='현재 비밀번호', fg=purple3)
+    oldPwLabel.grid(row=1,column=0,padx=10,pady=1)
+
+    oldPwInput = Entry(root, width= wholeX, bg=purple1, fg=purple3)
+    oldPwInput.grid(row=2,column=0,padx=10,pady=5)
+    oldPwInput.config(show='*')
+    oldPwInput.focus_set()
+    oldPwInput.bind("<Return>",goodBye2)
     
-    
+    joinBtn = Button(root, text='회원 탈퇴하기', font=btnFont, width= wholeX, bg=purple3, fg=purple1, command=goodBye)
+    joinBtn.grid(row=3,column=0,padx=10,pady=5)
+
+    backBtn = Button(root, text='이전 페이지로', font=btnFont, width= wholeX, bg=purple3, fg=purple1, command=todoPage)
+    backBtn.grid(row=4,column=0,padx=10,pady=5)
 
 
 root = Tk() # 기본 창 생성
