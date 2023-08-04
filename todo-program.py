@@ -62,7 +62,9 @@ def loginPage():
     joinBtn = Button(root, text='회원가입', font=btnFont, width= wholeX, bg=purple3, fg=purple1, command=joinPage)
     joinBtn.grid(row=6,column=0,padx=10,pady=10)
 
-    
+    versionLabel = Label(root, text=version, fg=blue1)
+    versionLabel.grid(row=7,column=0,padx=10,pady=10,sticky='e')
+  
 # 회원가입 페이지
 def joinPage():
     if(member.get('mbNo') != 0): # 로그인 정보가 있으면 할일목록 페이지로
@@ -544,9 +546,17 @@ def leavePage():
     backBtn.grid(row=4,column=0,padx=10,pady=5)
 
 
+
+##################
+#                #
+#  여기부터 시작  #
+#                #
+##################
+
 root = Tk() # 기본 창 생성
 
 # 공통 변수
+version = 'Version : 1.0.0'
 titleFont = tkinter.font.Font(family="맑은고딕", size=20, weight='bold')
 btnFont = tkinter.font.Font(family="맑은고딕", size=8, weight='bold')
 greetFont = tkinter.font.Font(family='맑은고딕', size=10, weight='bold')
@@ -569,7 +579,7 @@ root.title("TodoT") # 타이틀
 defaultSize="300x300+500+500"
 root.geometry(defaultSize) # 기본 창 크기
 root.configure(bg=purple1) # 배경색
-root.resizable(False,False) # 리사이징 허용(True),불가(False)
+root.resizable(False,True) # 리사이징 세로 허용(True), 가로 불가(False)
 
 loginPage()
 
