@@ -330,7 +330,7 @@ def todoPage():
 
     todos = getTodos(order)
     height = (len(todos)*30) + 200
-    root.geometry("455x"+ str(height) +"+500+500") # 창 크기 설정
+    root.geometry("455x"+ str(height)) # 창 크기 설정
     clear() # 모든 객체 파괴
 
     title = Label(root, text='TodoT', font=titleFont, bg=purple1, fg=purple3)
@@ -576,7 +576,7 @@ today = datetime.date.today()
 
 # 기본창 설정
 root.title("TodoT") # 타이틀
-defaultSize="300x300+500+500"
+defaultSize="300x300"
 root.geometry(defaultSize) # 기본 창 크기
 root.configure(bg=purple1) # 배경색
 root.resizable(False,True) # 리사이징 세로 허용(True), 가로 불가(False)
